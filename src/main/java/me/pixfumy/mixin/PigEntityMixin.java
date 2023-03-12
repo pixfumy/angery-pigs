@@ -1,0 +1,63 @@
+package me.pixfumy.mixin;
+
+import me.pixfumy.goal.PigFollowPlayerGoal;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.PathAwareEntity;
+import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.passive.PigEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+@Mixin(PigEntity.class)
+public abstract class PigEntityMixin extends MobEntity {
+    public PigEntityMixin(World world) {
+        super(world);
+    }
+
+    @Inject(method = "<init>", at = @At("TAIL"))
+    private void addPiglinGoals(World world, CallbackInfo ci) {
+        this.attackGoals.add(1, new PigFollowPlayerGoal((PathAwareEntity)(Object)this, PlayerEntity.class, false));
+        this.goals.add(1, new MeleeAttackGoal((PigEntity)(Object)this, PlayerEntity.class, 1.25F, false));
+    }
+
+    @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ai/goal/GoalSelector;add(ILnet/minecraft/entity/ai/goal/Goal;)V", ordinal = 1))
+    private void removeEscapeDangerGoal(GoalSelector instance, int priority, Goal goal) {
+
+    }
+
+    @Override
+    public boolean tryAttack(Entity target) {
+        boolean bl;
+        float f = 5.0F;
+        int i = 0;
+        this.swingHand();
+        if (target instanceof LivingEntity) {
+            f += EnchantmentHelper.getAttackDamage(this.getStackInHand(), ((LivingEntity)target).getGroup());
+            i += EnchantmentHelper.getKnockback(this);
+        }
+        if (bl = target.damage(DamageSource.mob(this), f)) {
+            int j;
+            if (i > 0) {
+                target.addVelocity(-MathHelper.sin(this.yaw * (float)Math.PI / 180.0f) * (float)i * 0.5f, 0.1, MathHelper.cos(this.yaw * (float)Math.PI / 180.0f) * (float)i * 0.5f);
+                this.velocityX *= 0.6;
+                this.velocityZ *= 0.6;
+            }
+            if ((j = EnchantmentHelper.getFireAspect(this)) > 0) {
+                target.setOnFireFor(j * 4);
+            }
+            this.dealDamage(this, target);
+        }
+        return bl;
+    }
+}
