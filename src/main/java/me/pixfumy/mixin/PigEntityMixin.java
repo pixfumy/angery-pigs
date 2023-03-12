@@ -1,12 +1,15 @@
 package me.pixfumy.mixin;
 
+import me.pixfumy.IPigEntity;
+import me.pixfumy.goal.PigAttackPlayerGoal;
+import me.pixfumy.goal.PigChaseGoldGoal;
 import me.pixfumy.goal.PigFollowPlayerGoal;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.PathAwareEntity;
 import net.minecraft.entity.ai.goal.*;
-import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.PigEntity;
@@ -20,15 +23,18 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PigEntity.class)
-public abstract class PigEntityMixin extends MobEntity {
+public abstract class PigEntityMixin extends MobEntity implements IPigEntity {
+    private ItemEntity targetItemEntity;
+
     public PigEntityMixin(World world) {
         super(world);
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void addPiglinGoals(World world, CallbackInfo ci) {
+        this.goals.add(0, new PigChaseGoldGoal((PigEntity)(Object)this, 1.25f));
         this.attackGoals.add(1, new PigFollowPlayerGoal((PathAwareEntity)(Object)this, PlayerEntity.class, false));
-        this.goals.add(1, new MeleeAttackGoal((PigEntity)(Object)this, PlayerEntity.class, 1.25F, false));
+        this.goals.add(2, new PigAttackPlayerGoal((PigEntity)(Object)this, PlayerEntity.class, 1.25F, false));
     }
 
     @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ai/goal/GoalSelector;add(ILnet/minecraft/entity/ai/goal/Goal;)V", ordinal = 1))
@@ -41,7 +47,6 @@ public abstract class PigEntityMixin extends MobEntity {
         boolean bl;
         float f = 5.0F;
         int i = 0;
-        this.swingHand();
         if (target instanceof LivingEntity) {
             f += EnchantmentHelper.getAttackDamage(this.getStackInHand(), ((LivingEntity)target).getGroup());
             i += EnchantmentHelper.getKnockback(this);
@@ -60,4 +65,16 @@ public abstract class PigEntityMixin extends MobEntity {
         }
         return bl;
     }
+
+    @Override
+    public ItemEntity getTargetItemEntity() {
+        return this.targetItemEntity;
+    }
+
+    @Override
+    public void setTargetItemEntity(ItemEntity entity) {
+        this.targetItemEntity = entity;
+    }
+
+
 }
