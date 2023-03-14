@@ -55,7 +55,7 @@ public class PigBarterGoal extends Goal {
     public void stop() {
         this.tradingTime = 0;
         ItemStack heldItemStack = this.pigEntity.getStackInHand();
-        if (heldItemStack.getItem() == Items.GOLD_INGOT) {
+        if (!this.pigEntity.isBaby() && heldItemStack.getItem() == Items.GOLD_INGOT) {
             ItemStack itemStackToDrop = PigDroppableItems.getLootDrop();
             ItemEntity itemEntity = this.pigEntity.dropItem(itemStackToDrop, 1.0f);
             itemEntity.velocityY += (double) (0.05f);
