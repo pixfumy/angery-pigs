@@ -25,11 +25,11 @@ public class PigDroppableItems {
             TOTAL_WEIGHT += 0.06;
             put(TOTAL_WEIGHT, new BarterEntry(Items.MAGMA_CREAM, Range.between(2, 6)));
             TOTAL_WEIGHT += 0.06;
-            put(TOTAL_WEIGHT, new BarterEntry(Items.GLOWSTONE_DUST, Range.between(1, 1)));
+            put(TOTAL_WEIGHT, new BarterEntry(Items.GLOWSTONE_DUST, Range.between(5, 12)));
             TOTAL_WEIGHT += 0.06;
             put(TOTAL_WEIGHT, new BarterEntry(Items.IRON_INGOT, Range.between(1, 4)));
             TOTAL_WEIGHT += 0.06;
-            put(TOTAL_WEIGHT, new BarterEntry(Items.QUARTZ, Range.between(1, 1)));
+            put(TOTAL_WEIGHT, new BarterEntry(Items.QUARTZ, Range.between(8, 16)));
             TOTAL_WEIGHT += 0.04;
             put(TOTAL_WEIGHT, new BarterEntry(Items.POTION, Range.between(1, 1)));
             TOTAL_WEIGHT += 0.04;
