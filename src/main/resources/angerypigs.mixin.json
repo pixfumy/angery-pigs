@@ -4,10 +4,10 @@
   "package": "me.pixfumy.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "PigEntityMixin",
-    "PigEntityRendererMixin"
+    "PigEntityMixin"
   ],
   "client": [
+    "PigEntityRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,5 +1,6 @@
 package me.pixfumy.mixin;
 
+import me.pixfumy.render.PigHeldItemRenderer;
 import me.pixfumy.render.PigHelmetFeatureRenderer;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.MobEntityRenderer;
@@ -20,6 +21,6 @@ public abstract class PigEntityRendererMixin extends MobEntityRenderer<PigEntity
     @Inject(method = "<init>", at = @At("TAIL"))
     private void addNewFeatures(EntityRenderDispatcher entityRenderDispatcher, EntityModel entityModel, float f, CallbackInfo ci) {
         this.addFeature(new PigHelmetFeatureRenderer((PigEntityRenderer)(Object)this));
-        //this.addFeature(new HeldItemRenderer((PigEntityRenderer)(Object)this));
+        this.addFeature(new PigHeldItemRenderer((PigEntityRenderer)(Object)this));
     }
 }
