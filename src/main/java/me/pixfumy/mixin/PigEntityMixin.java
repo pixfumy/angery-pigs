@@ -18,6 +18,7 @@ import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.LocalDifficulty;
@@ -28,6 +29,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
@@ -58,6 +60,21 @@ public abstract class PigEntityMixin extends MobEntity implements IPigEntity {
     @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ai/goal/GoalSelector;add(ILnet/minecraft/entity/ai/goal/Goal;)V", ordinal = 1))
     private void removeEscapeDangerGoal(GoalSelector instance, int priority, Goal goal) {
 
+    }
+
+    @Inject(method = "method_2537", at = @At("HEAD"))
+    private void handleRightClickWithGold(PlayerEntity playerEntity, CallbackInfoReturnable<Boolean> cir) {
+        if (!this.world.isClient) {
+            ItemStack itemStack = playerEntity.getMainHandStack();
+            if (itemStack != null && itemStack.getItem() == Items.GOLD_INGOT && !playerEntity.abilities.creativeMode) {
+                --itemStack.count;
+                if (itemStack.count <= 0) {
+                    playerEntity.inventory.setInvStack(playerEntity.inventory.selectedSlot, null);
+                }
+                this.setArmorSlot(0, new ItemStack(itemStack.getItem(), 1));
+                this.playSound(this.getAmbientSound(), this.getSoundVolume() + 0.2f, (this.random.nextFloat() - this.random.nextFloat()) * 0.2f + 0.5f);
+            }
+        }
     }
 
     @Override
