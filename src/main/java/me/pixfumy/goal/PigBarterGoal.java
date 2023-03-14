@@ -69,6 +69,7 @@ public class PigBarterGoal extends Goal {
                 itemEntity.velocityX += (this.pigEntity.getRandom().nextInt(3) - 1) * 0.1f;
                 itemEntity.velocityZ += (this.pigEntity.getRandom().nextInt(3) - 1) * 0.1f;
             }
+            pigEntity.playSound("mob.pig.death", 1.2f, (pigEntity.getRandom().nextFloat() - pigEntity.getRandom().nextFloat()) * 0.2f + 2.0f);
         } else if (heldItemStack.getItem() instanceof ArmorItem) {
             this.pigEntity.setArmorSlot(((ArmorItem) heldItemStack.getItem()).slot+1, heldItemStack);
         }

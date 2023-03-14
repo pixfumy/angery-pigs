@@ -20,6 +20,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -29,6 +30,10 @@ import java.util.List;
 
 @Mixin(PigEntity.class)
 public abstract class PigEntityMixin extends MobEntity implements IPigEntity {
+    @Shadow protected abstract String getHurtSound();
+
+    @Shadow protected abstract String getAmbientSound();
+
     private ItemEntity targetItemEntity;
 
     public PigEntityMixin(World world) {
@@ -85,6 +90,7 @@ public abstract class PigEntityMixin extends MobEntity implements IPigEntity {
                     itemEntity.removed = true;
                 }
                 this.setArmorSlot(0, new ItemStack(itemEntity.getItemStack().getItem(), 1));
+                this.playSound(this.getAmbientSound(), this.getSoundVolume() + 0.2f, (this.random.nextFloat() - this.random.nextFloat()) * 0.2f + 0.5f);
             }
         }
         this.world.profiler.pop();
