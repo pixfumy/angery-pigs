@@ -67,6 +67,13 @@ public class PigDroppableItems {
         public ItemStack getDropStack() {
             Random random = new Random();
             int dropAmount = random.nextInt(amountsRange.getMaximum() - amountsRange.getMinimum() + 1) + amountsRange.getMinimum();
+            if (item == Items.POTION) {
+                if (random.nextInt(2) > 0) {
+                    return new ItemStack(item, 1, 8227);
+                } else {
+                    return new ItemStack(item, 1, 16419);
+                }
+            }
             return new ItemStack(item, dropAmount);
         }
     }
