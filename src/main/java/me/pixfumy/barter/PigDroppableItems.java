@@ -35,7 +35,7 @@ public class PigDroppableItems {
             TOTAL_WEIGHT += 0.04;
             put(TOTAL_WEIGHT, new BarterEntry(Items.ARROW, Range.between(4, 8)));
             TOTAL_WEIGHT += 0.04;
-            put(TOTAL_WEIGHT, new BarterEntry(Items.EGG, Range.between(10, 16)));
+            put(TOTAL_WEIGHT, new BarterEntry(Items.SNOWBALL, Range.between(10, 16)));
             TOTAL_WEIGHT += 0.04;
             put(TOTAL_WEIGHT, new BarterEntry(Items.NETHERBRICK, Range.between(4, 16)));
             TOTAL_WEIGHT += 0.04;

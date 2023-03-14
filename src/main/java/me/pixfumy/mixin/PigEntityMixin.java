@@ -14,7 +14,9 @@ import net.minecraft.entity.PathAwareEntity;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.passive.CowEntity;
 import net.minecraft.entity.passive.PigEntity;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
@@ -34,6 +36,8 @@ public abstract class PigEntityMixin extends MobEntity implements IPigEntity {
 
     @Shadow protected abstract String getAmbientSound();
 
+    @Shadow protected abstract String getDeathSound();
+
     private ItemEntity targetItemEntity;
 
     public PigEntityMixin(World world) {
@@ -46,6 +50,8 @@ public abstract class PigEntityMixin extends MobEntity implements IPigEntity {
         this.goals.add(0, new PigChaseGoldGoal((PigEntity)(Object)this, 1.25f));
         this.attackGoals.add(1, new PigFollowPlayerGoal((PathAwareEntity)(Object)this, PlayerEntity.class, false));
         this.goals.add(2, new PigAttackPlayerGoal((PigEntity)(Object)this, PlayerEntity.class, 1.25F, false));
+        this.attackGoals.add(1, new FollowTargetGoal<CowEntity>((PathAwareEntity)(Object)this, CowEntity.class, true));
+        this.goals.add(2, new MeleeAttackGoal((PathAwareEntity) (Object)this, CowEntity.class, 1.25F, false));
     }
 
     @Redirect(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/ai/goal/GoalSelector;add(ILnet/minecraft/entity/ai/goal/Goal;)V", ordinal = 1))
@@ -72,6 +78,7 @@ public abstract class PigEntityMixin extends MobEntity implements IPigEntity {
             if ((j = EnchantmentHelper.getFireAspect(this)) > 0) {
                 target.setOnFireFor(j * 4);
             }
+            this.playSound(getDeathSound(), 1.2f, (this.getRandom().nextFloat() - this.getRandom().nextFloat()) * 0.2f + 0.5f);
             this.dealDamage(this, target);
         }
         return bl;
