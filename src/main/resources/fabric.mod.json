@@ -3,14 +3,14 @@
   "id": "angerypigs",
   "version": "${version}",
   "name": "Angery Pigs",
-  "description": "Adds piglins to pre1.9 but not in the way you'd think",
+  "description": "I was just bored between working on reset mods tbh",
   "authors": [
     "pixfumy"
   ],
   "contact": {
     "homepage": "https://github.com/pixfumy"
   },
-  "license": "CC0-1.0",
+  "license": "GPL3",
   "icon": "assets/angerypigs/icon.png",
   "environment": "*",
   "entrypoints": {
