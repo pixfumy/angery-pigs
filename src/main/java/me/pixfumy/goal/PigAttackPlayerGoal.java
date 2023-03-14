@@ -1,13 +1,12 @@
 package me.pixfumy.goal;
 
-import me.pixfumy.IPigEntity;
+import me.pixfumy.mixinterface.IPigEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.PathAwareEntity;
 import net.minecraft.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ArmorItem;
-import net.minecraft.util.math.BlockPos;
 
 import java.util.Arrays;
 

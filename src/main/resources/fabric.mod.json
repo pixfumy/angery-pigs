@@ -15,6 +15,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
+      "me.pixfumy.AngeryPigs"
     ]
   },
   "mixins": [

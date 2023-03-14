@@ -1,15 +1,13 @@
 package me.pixfumy;
 
-import net.minecraft.entity.passive.PigEntity;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import net.fabricmc.api.ModInitializer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-@Mixin(PigEntity.class)
-public class AngeryPigs {
-	@Inject(at = @At("HEAD"), method = "init()V")
-	private void init(CallbackInfo info) {
-		System.out.println("This line is printed by an example mod mixin!");
-	}
+public class AngeryPigs implements ModInitializer {
+    public static final Logger LOGGER = LogManager.getLogger();
+    @Override
+    public void onInitialize() {
+        LOGGER.info("RIP Technoblade");
+    }
 }

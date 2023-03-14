@@ -1,7 +1,9 @@
 package me.pixfumy.mixin;
 
-import me.pixfumy.IPigEntity;
+import me.pixfumy.barter.PigUsableItems;
+import me.pixfumy.mixinterface.IPigEntity;
 import me.pixfumy.goal.PigAttackPlayerGoal;
+import me.pixfumy.goal.PigBarterGoal;
 import me.pixfumy.goal.PigChaseGoldGoal;
 import me.pixfumy.goal.PigFollowPlayerGoal;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -14,6 +16,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,6 +24,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.List;
 
 @Mixin(PigEntity.class)
 public abstract class PigEntityMixin extends MobEntity implements IPigEntity {
@@ -32,6 +37,7 @@ public abstract class PigEntityMixin extends MobEntity implements IPigEntity {
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void addPiglinGoals(World world, CallbackInfo ci) {
+        this.goals.add(-1, new PigBarterGoal((PigEntity)(Object)this));
         this.goals.add(0, new PigChaseGoldGoal((PigEntity)(Object)this, 1.25f));
         this.attackGoals.add(1, new PigFollowPlayerGoal((PathAwareEntity)(Object)this, PlayerEntity.class, false));
         this.goals.add(2, new PigAttackPlayerGoal((PigEntity)(Object)this, PlayerEntity.class, 1.25F, false));
@@ -64,6 +70,24 @@ public abstract class PigEntityMixin extends MobEntity implements IPigEntity {
             this.dealDamage(this, target);
         }
         return bl;
+    }
+
+    @Override
+    public void tickMovement() {
+        super.tickMovement();
+        this.world.profiler.push("lootingGold");
+        if (!this.world.isClient && !this.dead && this.world.getGameRules().getBoolean("mobGriefing")) {
+            List<ItemEntity> list = this.world.getEntitiesInBox(ItemEntity.class, this.getBoundingBox().expand(1.0, 0.0, 1.0),
+                    itemEntity -> !itemEntity.removed && this.getStackInHand() == null && PigUsableItems.isPigUsable(itemEntity.getItemStack().getItem()));
+            for (ItemEntity itemEntity : list) {
+                if (itemEntity.removed || itemEntity.cannotPickup()) continue;
+                if (--itemEntity.getItemStack().count <= 0) {
+                    itemEntity.removed = true;
+                }
+                this.setArmorSlot(0, new ItemStack(itemEntity.getItemStack().getItem(), 1));
+            }
+        }
+        this.world.profiler.pop();
     }
 
     @Override

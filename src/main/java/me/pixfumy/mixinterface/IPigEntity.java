@@ -1,4 +1,4 @@
-package me.pixfumy;
+package me.pixfumy.mixinterface;
 
 import net.minecraft.entity.ItemEntity;
 

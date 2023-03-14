@@ -1,11 +1,14 @@
 package me.pixfumy.goal;
 
-import me.pixfumy.IPigEntity;
+import me.pixfumy.barter.PigUsableItems;
+import me.pixfumy.mixinterface.IPigEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.passive.PigEntity;
-import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class PigChaseGoldGoal extends Goal {
@@ -21,12 +24,16 @@ public class PigChaseGoldGoal extends Goal {
 
     @Override
     public boolean canStart() {
+        if (this.pigEntity.getStackInHand() != null) {
+            return false;
+        }
         double d = 10.0D;
         List<ItemEntity> list = this.pigEntity.world.getEntitiesInBox(ItemEntity.class, this.pigEntity.getBoundingBox().expand(d, 4.0, d),
-                entity -> !entity.removed && entity.getDataTracker().getStack(10).getItem() == Items.GOLD_INGOT);
+                entity -> !entity.removed && PigUsableItems.isPigUsable(entity.getDataTracker().getStack(10).getItem()));
         if (list.isEmpty()) {
             return false;
         }
+        Collections.sort(list, Comparator.comparingDouble(obj -> obj.squaredDistanceTo(PigChaseGoldGoal.this.pigEntity)));
         ((IPigEntity)this.pigEntity).setTargetItemEntity(list.get(0));
         return true;
     }
