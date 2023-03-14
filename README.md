@@ -3,7 +3,7 @@
 Adds piglins to pre1.9 but not in the way you'd expect.
 
 ## Features
-- Pigs immediately aggro and attack players not wearing gold armor
+- Pigs immediately aggro and attack players not wearing gold armour
 - Pigs can be right clicked or thrown with gold ingots to initiate a barter
 - Pigs trade back useful items like pearls, string, arrows, snowballs, fire res potions 
 - Pigs and cows will have gang wars
@@ -11,6 +11,7 @@ Adds piglins to pre1.9 but not in the way you'd expect.
 - Pigs will equip armor when thrown to them
 - Baby pigs will take your gold but won't give back anything in return
 - New sound effects have been added for some pig actions
+- Pigs will attempt to hurt you with the items they throw at you. If you get hit, they do half a heart of damage
 
 ## Barters
 | Item                         | Range   | Probability |
