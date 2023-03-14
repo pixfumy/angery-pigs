@@ -7,6 +7,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.predicate.EntityPredicate;
@@ -57,13 +58,22 @@ public class PigBarterGoal extends Goal {
         ItemStack heldItemStack = this.pigEntity.getStackInHand();
         if (!this.pigEntity.isBaby() && heldItemStack.getItem() == Items.GOLD_INGOT) {
             ItemStack itemStackToDrop = PigDroppableItems.getLootDrop();
-            ItemEntity itemEntity = this.pigEntity.dropItem(itemStackToDrop, 1.0f);
-            itemEntity.velocityY += (double) (0.05f);
+            ItemEntity itemEntity = new ItemEntity(this.pigEntity.world, this.pigEntity.x, this.pigEntity.y + 1.0, this.pigEntity.z, itemStackToDrop) {
+                @Override
+                public void onPlayerCollision(PlayerEntity playerEntity) {
+                    if (!this.world.isClient) {
+                        playerEntity.damage(DamageSource.GENERIC, 1.0F);
+                    }
+                }
+            };
+            itemEntity.setToDefaultPickupDelay();
+            this.pigEntity.world.spawnEntity(itemEntity);
             List<PlayerEntity> list = this.pigEntity.world.getEntitiesInBox(PlayerEntity.class, this.pigEntity.getBoundingBox().expand(10, 4.0, 10), EntityPredicate.EXCEPT_SPECTATOR);
             Collections.sort(list, Comparator.comparingDouble(player -> this.pigEntity.distanceTo(player)));
             if (!list.isEmpty()) {
                 PlayerEntity nearestPlayer = list.get(0);
                 itemEntity.velocityX += (nearestPlayer.x - this.pigEntity.x) * 0.1f;
+                itemEntity.velocityY += (nearestPlayer.y - this.pigEntity.y) * 0.1f;
                 itemEntity.velocityZ += (nearestPlayer.z - this.pigEntity.z) * 0.1f;
             } else {
                 itemEntity.velocityX += (this.pigEntity.getRandom().nextInt(3) - 1) * 0.1f;
