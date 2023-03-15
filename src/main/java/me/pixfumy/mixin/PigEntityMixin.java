@@ -6,9 +6,11 @@ import me.pixfumy.goal.PigAttackPlayerGoal;
 import me.pixfumy.goal.PigBarterGoal;
 import me.pixfumy.goal.PigChaseGoldGoal;
 import me.pixfumy.goal.PigFollowPlayerGoal;
+import net.minecraft.advancement.AchievementsAndCriterions;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.CowEntity;
@@ -16,12 +18,9 @@ import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.item.*;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.LocalDifficulty;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -51,9 +50,9 @@ public abstract class PigEntityMixin extends MobEntity implements IPigEntity {
     private void addPiglinGoals(World world, CallbackInfo ci) {
         this.goals.add(-1, new PigBarterGoal((PigEntity)(Object)this));
         this.goals.add(0, new PigChaseGoldGoal((PigEntity)(Object)this, 1.25f));
-        this.attackGoals.add(1, new PigFollowPlayerGoal((PathAwareEntity)(Object)this, PlayerEntity.class, false));
+        this.attackGoals.add(1, new PigFollowPlayerGoal((PathAwareEntity)(Object)this, PlayerEntity.class, 0, false));
         this.goals.add(2, new PigAttackPlayerGoal((PigEntity)(Object)this, PlayerEntity.class, 1.25F, false));
-        this.attackGoals.add(1, new FollowTargetGoal<CowEntity>((PathAwareEntity)(Object)this, CowEntity.class, true));
+        this.attackGoals.add(1, new FollowTargetGoal((PathAwareEntity)(Object)this, CowEntity.class, 0, true));
         this.goals.add(2, new MeleeAttackGoal((PathAwareEntity) (Object)this, CowEntity.class, 1.25F, false));
     }
 
@@ -83,8 +82,8 @@ public abstract class PigEntityMixin extends MobEntity implements IPigEntity {
         float f = 5.0F;
         int i = 0;
         if (target instanceof LivingEntity) {
-            f += EnchantmentHelper.getAttackDamage(this.getStackInHand(), ((LivingEntity)target).getGroup());
-            i += EnchantmentHelper.getKnockback(this);
+            f += EnchantmentHelper.method_6387(this, (LivingEntity)target);
+            i += EnchantmentHelper.method_5494(this, (LivingEntity)target);
         }
         if (bl = target.damage(DamageSource.mob(this), f)) {
             int j;
@@ -96,8 +95,11 @@ public abstract class PigEntityMixin extends MobEntity implements IPigEntity {
             if ((j = EnchantmentHelper.getFireAspect(this)) > 0) {
                 target.setOnFireFor(j * 4);
             }
+            if (target instanceof LivingEntity) {
+                EnchantmentHelper.onUserDamaged((LivingEntity)target, this);
+            }
+            EnchantmentHelper.onTargetDamaged(this, target);
             this.playSound(getDeathSound(), 1.2f, (this.getRandom().nextFloat() - this.getRandom().nextFloat()) * 0.2f + 0.5f);
-            this.dealDamage(this, target);
         }
         return bl;
     }
@@ -107,40 +109,40 @@ public abstract class PigEntityMixin extends MobEntity implements IPigEntity {
         super.tickMovement();
         this.world.profiler.push("lootingGold");
         if (!this.world.isClient && !this.dead && this.world.getGameRules().getBoolean("mobGriefing")) {
-            List<ItemEntity> list = this.world.getEntitiesInBox(ItemEntity.class, this.getBoundingBox().expand(1.0, 0.0, 1.0),
-                    itemEntity -> !itemEntity.removed && this.getStackInHand() == null && PigUsableItems.isPigUsable(itemEntity.getItemStack().getItem()));
+            List<ItemEntity> list = this.world.getEntitiesInBox(ItemEntity.class, this.boundingBox.expand(1.0, 0.0, 1.0),
+                    itemEntity -> !itemEntity.removed && this.getStackInHand() == null && PigUsableItems.isPigUsable(((ItemEntity)itemEntity).getItemStack().getItem()));
             for (ItemEntity itemEntity : list) {
-                if (itemEntity.removed || itemEntity.cannotPickup()) continue;
+                if (itemEntity.removed || itemEntity.getItemStack() == null || itemEntity.pickupDelay > 0) continue;
                 if (--itemEntity.getItemStack().count <= 0) {
-                    itemEntity.removed = true;
+                    itemEntity.remove();
                 }
-                this.setArmorSlot(0, new ItemStack(itemEntity.getItemStack().getItem(), 1));
+                this.setArmorSlot(0, new ItemStack(itemEntity.getItemStack().getItem()));
                 this.playSound(this.getAmbientSound(), this.getSoundVolume() + 0.2f, (this.random.nextFloat() - this.random.nextFloat()) * 0.2f + 0.5f);
             }
         }
         this.world.profiler.pop();
     }
 
-    @Override
-    public EntityData initialize(LocalDifficulty difficulty, EntityData data) {
-        data = super.initialize(difficulty, data);
-        this.initEquipment(difficulty);
-        return data;
-    }
-
-    @Override
-    protected void initEquipment(LocalDifficulty difficulty) {
-        if (this.random.nextFloat() < 0.1f) {
-            float f = this.world.getGlobalDifficulty() == Difficulty.HARD ? 0.1f : 0.25f;
-            for (int j = 3; j >= 0; --j) {
-                Item item;
-                ItemStack itemStack = this.getArmorSlot(j);
-                if (j < 3 && this.random.nextFloat() < f) break;
-                if (itemStack != null || (item = MobEntity.getArmorItem(j + 1, 1)) == null) continue;
-                this.setArmorSlot(j + 1, new ItemStack(item));
-            }
-        }
-    }
+//    @Override
+//    public EntityData initialize(LocalDifficulty difficulty, EntityData data) {
+//        data = super.initialize(difficulty, data);
+//        this.initEquipment(difficulty);
+//        return data;
+//    }
+//
+//    @Override
+//    protected void initEquipment(LocalDifficulty difficulty) {
+//        if (this.random.nextFloat() < 0.1f) {
+//            float f = this.world.getGlobalDifficulty() == Difficulty.HARD ? 0.1f : 0.25f;
+//            for (int j = 3; j >= 0; --j) {
+//                Item item;
+//                ItemStack itemStack = this.getArmorSlot(j);
+//                if (j < 3 && this.random.nextFloat() < f) break;
+//                if (itemStack != null || (item = MobEntity.getArmorItem(j + 1, 1)) == null) continue;
+//                this.setArmorSlot(j + 1, new ItemStack(item));
+//            }
+//        }
+//    }
 
     @Override
     public ItemEntity getTargetItemEntity() {

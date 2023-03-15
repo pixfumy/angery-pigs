@@ -4,6 +4,7 @@
   "package": "me.pixfumy.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "access.FollowTargetGoalAccess",
     "PigEntityMixin",
     "CowEntityMixin"
   ],

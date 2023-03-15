@@ -18,15 +18,14 @@ import net.minecraft.item.Items;
 import net.minecraft.util.RandomVectorGenerator;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class PigBarterGoal extends Goal {
     private final PigEntity pigEntity;
     private int tradingTime = 0;
-    private Vec3d wanderingTarget;
+    private double wanderingTargetX;
+    private double wanderingTargetY;
+    private double wanderingTargetZ;
     public PigBarterGoal(PigEntity pigEntity) {
         this.pigEntity = pigEntity;
     }
@@ -43,13 +42,16 @@ public class PigBarterGoal extends Goal {
 
     @Override
     public void start() {
-        this.wanderingTarget = Optional.of(RandomVectorGenerator.method_2799(this.pigEntity, 7, 7)).orElse(this.pigEntity.getPos());
+        Random random = this.pigEntity.getRandom();
+        this.wanderingTargetX = this.pigEntity.x + random.nextInt(21) - 10;
+        this.wanderingTargetY = this.pigEntity.y;
+        this.wanderingTargetZ = this.pigEntity.z + random.nextInt(21) - 10;
     }
 
     @Override
     public void tick() {
         this.tradingTime++;
-        this.pigEntity.getNavigation().startMovingTo(wanderingTarget.x, wanderingTarget.y, wanderingTarget.z, 0.5F);
+        this.pigEntity.getNavigation().startMovingTo(wanderingTargetX, wanderingTargetY, wanderingTargetZ, 0.5F);
     }
 
     @Override
@@ -61,20 +63,21 @@ public class PigBarterGoal extends Goal {
             ItemEntity itemEntity = new ItemEntity(this.pigEntity.world, this.pigEntity.x, this.pigEntity.y + 1.0, this.pigEntity.z, itemStackToDrop) {
                 @Override
                 public void onPlayerCollision(PlayerEntity playerEntity) {
-                    if (!this.world.isClient) {
+                    if (!this.world.isClient && Math.abs(this.velocityX) + Math.abs(this.velocityZ) > 0.4) {
                         playerEntity.damage(DamageSource.GENERIC, 1.0F);
                     }
+                    super.onPlayerCollision(playerEntity);
                 }
             };
-            itemEntity.setToDefaultPickupDelay();
+            itemEntity.pickupDelay = 10;
             this.pigEntity.world.spawnEntity(itemEntity);
-            List<PlayerEntity> list = this.pigEntity.world.getEntitiesInBox(PlayerEntity.class, this.pigEntity.getBoundingBox().expand(10, 4.0, 10), EntityPredicate.EXCEPT_SPECTATOR);
+            List<PlayerEntity> list = this.pigEntity.world.getEntitiesInBox(PlayerEntity.class, this.pigEntity.boundingBox.expand(10, 4.0, 10));
             Collections.sort(list, Comparator.comparingDouble(player -> this.pigEntity.distanceTo(player)));
             if (!list.isEmpty()) {
                 PlayerEntity nearestPlayer = list.get(0);
-                itemEntity.velocityX += (nearestPlayer.x - this.pigEntity.x) * 0.1f;
-                itemEntity.velocityY += (nearestPlayer.y - this.pigEntity.y) * 0.1f;
-                itemEntity.velocityZ += (nearestPlayer.z - this.pigEntity.z) * 0.1f;
+                itemEntity.velocityX += (nearestPlayer.x - itemEntity.x) * 0.1f;
+                itemEntity.velocityY += (nearestPlayer.y - itemEntity.y) * 0.1f;
+                itemEntity.velocityZ += (nearestPlayer.z - itemEntity.z) * 0.1f;
             } else {
                 itemEntity.velocityX += (this.pigEntity.getRandom().nextInt(3) - 1) * 0.1f;
                 itemEntity.velocityZ += (this.pigEntity.getRandom().nextInt(3) - 1) * 0.1f;

@@ -13,24 +13,27 @@ import java.util.Arrays;
 
 public class PigAttackPlayerGoal extends MeleeAttackGoal {
     private int ticksSinceLastRoar = 0;
+    private PigEntity pig;
+
     public PigAttackPlayerGoal(PathAwareEntity mob, Class<? extends Entity> targetClass, double speed, boolean pauseWhenMobIdle) {
         super(mob, targetClass, speed, pauseWhenMobIdle);
+        this.pig = (PigEntity) mob;
     }
 
     @Override
     public boolean shouldContinue() {
-        if (((IPigEntity)this.mob).getTargetItemEntity() != null) {
+        if (((IPigEntity)this.pig).getTargetItemEntity() != null) {
             return false;
         }
-        if (this.mob.getStackInHand() != null) {
+        if (this.pig.getStackInHand() != null) {
             return false;
         }
-        LivingEntity target = this.mob.getTarget();
+        LivingEntity target = this.pig.getTarget();
         if (target == null || !(target instanceof PlayerEntity) || !target.isAlive()) {
             return false;
         }
         PlayerEntity playerEntity = (PlayerEntity) target;
-        if ((Arrays.stream(playerEntity.getArmorStacks()).anyMatch((itemStack) -> itemStack != null && ((ArmorItem)itemStack.getItem()).getMaterial() == ArmorItem.Material.GOLD))) {
+        if ((Arrays.stream(playerEntity.getArmorStacks()).anyMatch((itemStack) -> itemStack != null && ((ArmorItem)itemStack.getItem()).materialId == 4))) {
             return false;
         }
         return super.shouldContinue();
@@ -42,8 +45,7 @@ public class PigAttackPlayerGoal extends MeleeAttackGoal {
         if (this.shouldContinue()) {
             super.tick();
             if (this.ticksSinceLastRoar > 150) {
-                PigEntity pigEntity = (PigEntity) this.mob;
-                pigEntity.playSound("mob.pig.death", 1.2f, (pigEntity.getRandom().nextFloat() - pigEntity.getRandom().nextFloat()) * 0.2f + 0.5f);
+                this.pig.playSound("mob.pig.death", 1.2f, (this.pig.getRandom().nextFloat() - this.pig.getRandom().nextFloat()) * 0.2f + 0.5f);
                 this.ticksSinceLastRoar = 0;
             }
         }

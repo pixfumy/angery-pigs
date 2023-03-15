@@ -31,7 +31,7 @@ public abstract class CowEntityMixin extends MobEntity {
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void addFightingPigGoals(World world, CallbackInfo ci) {
-        this.attackGoals.add(1, new FollowTargetGoal<PigEntity>((PathAwareEntity)(Object)this, PigEntity.class, true));
+        this.attackGoals.add(1, new FollowTargetGoal((PathAwareEntity)(Object)this, PigEntity.class, 0, true));
         this.goals.add(2, new MeleeAttackGoal((PathAwareEntity) (Object)this, PigEntity.class, 1.25F, false));
     }
 
@@ -41,8 +41,8 @@ public abstract class CowEntityMixin extends MobEntity {
         float f = 5.0F;
         int i = 0;
         if (target instanceof LivingEntity) {
-            f += EnchantmentHelper.getAttackDamage(this.getStackInHand(), ((LivingEntity)target).getGroup());
-            i += EnchantmentHelper.getKnockback(this);
+            f += EnchantmentHelper.method_6387(this, (LivingEntity)target);
+            i += EnchantmentHelper.method_5494(this, (LivingEntity)target);
         }
         if (bl = target.damage(DamageSource.mob(this), f)) {
             int j;
@@ -54,8 +54,11 @@ public abstract class CowEntityMixin extends MobEntity {
             if ((j = EnchantmentHelper.getFireAspect(this)) > 0) {
                 target.setOnFireFor(j * 4);
             }
+            if (target instanceof LivingEntity) {
+                EnchantmentHelper.onUserDamaged((LivingEntity)target, this);
+            }
+            EnchantmentHelper.onTargetDamaged(this, target);
             this.playSound(getDeathSound(), 1.2f, (this.getRandom().nextFloat() - this.getRandom().nextFloat()) * 0.2f + 0.5f);
-            this.dealDamage(this, target);
         }
         return bl;
     }

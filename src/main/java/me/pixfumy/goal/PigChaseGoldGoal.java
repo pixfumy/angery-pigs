@@ -2,6 +2,7 @@ package me.pixfumy.goal;
 
 import me.pixfumy.barter.PigUsableItems;
 import me.pixfumy.mixinterface.IPigEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.passive.PigEntity;
@@ -28,7 +29,7 @@ public class PigChaseGoldGoal extends Goal {
             return false;
         }
         double d = 10.0D;
-        List<ItemEntity> list = this.pigEntity.world.getEntitiesInBox(ItemEntity.class, this.pigEntity.getBoundingBox().expand(d, 4.0, d),
+        List<ItemEntity> list = this.pigEntity.world.getEntitiesInBox(ItemEntity.class, this.pigEntity.boundingBox.expand(d, 4.0, d),
                 entity -> !entity.removed && PigUsableItems.isPigUsable(entity.getDataTracker().getStack(10).getItem()));
         if (list.isEmpty()) {
             return false;
@@ -45,12 +46,12 @@ public class PigChaseGoldGoal extends Goal {
 
     @Override
     public void tick() {
-        BlockPos targetPos = ((IPigEntity)this.pigEntity).getTargetItemEntity().getBlockPos();
-        if (this.pigEntity.squaredDistanceToCenter(targetPos.up()) > 1.0) {
+        Entity targetItemEntity = ((IPigEntity)this.pigEntity).getTargetItemEntity();
+        if (this.pigEntity.distanceTo(targetItemEntity) > 1) {
             this.reached = false;
             ++this.tryingTime;
             if (this.tryingTime > 5) {
-                this.pigEntity.getNavigation().startMovingTo((double)targetPos.getX() + 0.5, targetPos.getY() + 1, targetPos.getZ() + 0.5, this.speed);
+                this.pigEntity.getNavigation().startMovingTo((double)targetItemEntity.x + 0.5, targetItemEntity.y + 1, targetItemEntity.z + 0.5, this.speed);
             }
         } else {
             this.reached = true;
