@@ -61,9 +61,10 @@ public class PigBarterGoal extends Goal {
             ItemEntity itemEntity = new ItemEntity(this.pigEntity.world, this.pigEntity.x, this.pigEntity.y + 1.0, this.pigEntity.z, itemStackToDrop) {
                 @Override
                 public void onPlayerCollision(PlayerEntity playerEntity) {
-                    if (!this.world.isClient) {
+                    if (!this.world.isClient && Math.abs(this.velocityX) + Math.abs(this.velocityZ) > 0.4f) {
                         playerEntity.damage(DamageSource.GENERIC, 1.0F);
                     }
+                    super.onPlayerCollision(playerEntity);
                 }
             };
             itemEntity.setToDefaultPickupDelay();
@@ -72,9 +73,9 @@ public class PigBarterGoal extends Goal {
             Collections.sort(list, Comparator.comparingDouble(player -> this.pigEntity.distanceTo(player)));
             if (!list.isEmpty()) {
                 PlayerEntity nearestPlayer = list.get(0);
-                itemEntity.velocityX += (nearestPlayer.x - this.pigEntity.x) * 0.1f;
-                itemEntity.velocityY += (nearestPlayer.y - this.pigEntity.y) * 0.1f;
-                itemEntity.velocityZ += (nearestPlayer.z - this.pigEntity.z) * 0.1f;
+                itemEntity.velocityX += (nearestPlayer.x - itemEntity.x) * 0.1f;
+                itemEntity.velocityY += (nearestPlayer.y - itemEntity.y) * 0.1f;
+                itemEntity.velocityZ += (nearestPlayer.z - itemEntity.z) * 0.1f;
             } else {
                 itemEntity.velocityX += (this.pigEntity.getRandom().nextInt(3) - 1) * 0.1f;
                 itemEntity.velocityZ += (this.pigEntity.getRandom().nextInt(3) - 1) * 0.1f;
